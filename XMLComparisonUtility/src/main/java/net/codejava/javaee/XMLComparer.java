@@ -1,13 +1,17 @@
 package net.codejava.javaee;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.Part;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -23,15 +27,22 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.sql.SQLException;
+import java.util.stream.Stream;
 
 
 /**
  * Servlet implementation class XMLComparer
  */
 @WebServlet("/xmlComparer")
+@MultipartConfig(
+		  fileSizeThreshold = 1024 * 1024 * 1, // 1 MB
+		  maxFileSize = 1024 * 1024 * 10,      // 10 MB
+		  maxRequestSize = 1024 * 1024 * 100   // 100 MB
+		)
 public class XMLComparer extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
@@ -48,20 +59,25 @@ public class XMLComparer extends HttpServlet {
 	 */
 	public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		// TODO Auto-generated method stub
-		String pathXml1 = request.getParameter("xml1");
-		String pathXml2 = request.getParameter("xml2");
+		 Part filePart1 = request.getPart("xml1");
+		 Part filePart2 = request.getPart("xml2");
+		 InputStream xml1 =filePart1.getInputStream();
+		 InputStream xml2 =filePart2.getInputStream();
+		   
+		//Stream pathXml1 = request.getParameter("xml1");
+		//String pathXml2 = request.getParameter("xml2");
 		PrintWriter writer = response.getWriter();
 		writer.println("<h1>Hello, Please wait..Comparison is in Process.</h1>");
 		writer.close();
 		try {
-			compareTwoPayloads(pathXml1, pathXml2);
+			compareTwoPayloads(xml1, xml2);
 		} catch (SQLException | ParserConfigurationException | IOException | SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	 public void compareTwoPayloads(String path1, String path2) throws SQLException, ParserConfigurationException, IOException, SAXException {
+	 public void compareTwoPayloads(InputStream path1, InputStream path2) throws SQLException, ParserConfigurationException, IOException, SAXException {
 
 //       String pathLWR = "C:\\Automation\\FrameworkExecutions\\Payloads_LWR_"+LWRQuoteRef;
 //       String pathSOR = "C:\\Automation\\FrameworkExecutions\\Payloads_SOR_"+SORQuoteRef;
@@ -72,16 +88,17 @@ public class XMLComparer extends HttpServlet {
 
 
 
-       File xmlFile = new File(path1);
-       File xmlFile2 = new File(path2);
+       //File xmlFile = new File(path1);
+       //File xmlFile2 = new File(path2);
 
        //context.getReporter().setLevel(ReportLevel.CHILD).setReportStatus(Status.INFO).addPayload(Services.VehicleEnrichRequest, "LWR_PolarisRequest",getAllPayloads(LWRQuoteRef).getRequests().getVehicleEnrichAsync()).attachToReport();
        //context.getReporter().setLevel(ReportLevel.CHILD).setReportStatus(Status.INFO).addPayload(Services.VehicleEnrichRequest,"SOR_PolarisRequest", getAllPayloads(SORQuoteRef).getRequests().getVehicleEnrichAsync()).attachToReport();
 
        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
        DocumentBuilder builder = factory.newDocumentBuilder();
-       Document doc = builder.parse(xmlFile);
-       Document doc2 = builder.parse(xmlFile2);
+       Document doc = builder.parse(path1);
+       Document doc2 = builder.parse(path2);
+       
 
        NodeList node1 = doc.getDocumentElement().getChildNodes();
        NodeList node2 = doc2.getDocumentElement().getChildNodes();

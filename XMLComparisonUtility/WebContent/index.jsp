@@ -8,10 +8,10 @@
 </head>
 <body>
 <h1>Hello JSP and Servlet!</h1>
-<form action="xmlComparer" method="post">
-    Enter path for XML1: <input type="text" name="xml1" size="20" required>
-    Enter path for XML2: <input type="text" name="xml2" size="20" required>
-    <input type="submit" value="Call Servlet" />
+<form action="xmlComparer" method="post" enctype="multipart/form-data">
+    Enter path for XML1: <input type="file" name="xml1" size="20" required>
+    Enter path for XML2: <input type="file" name="xml2" size="20" required>
+    <input type="submit" value="Compare" />
 </form>
 </body>
 </html>
